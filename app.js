@@ -13,10 +13,10 @@
  */
 
 const startAudioButton = document.querySelector("#startAudio"),
-      clockSlider = document.querySelector("#clockTempo"),
-      tempoVal = document.querySelector("#tempoValue"),
-      canvas = document.getElementById("canvas"),
-      ctx = canvas.getContext('2d');
+    clockSlider = document.querySelector("#clockTempo"),
+    tempoVal = document.querySelector("#tempoValue"),
+    canvas = document.getElementById("canvas"),
+    ctx = canvas.getContext('2d');
 
 let ruleNum = 30;
 let generation = 0;
@@ -27,18 +27,17 @@ let h = window.innerHeight;
 let cellWidth = 5;
 
 
-function updateCanvasSize()
-{
+function updateCanvasSize() {
     w = window.innerWidth;
     h = window.innerHeight;
     canvas.width = w;
     canvas.height = h;
     generation = 0;
-    
+
     ctx.fillStyle = 'white';
-    ctx.fillRect(0,0,w,h);
+    ctx.fillRect(0, 0, w, h);
     cells = new Array(Math.floor(w / cellWidth));
-  nextGen = new Array(cells.length);
+    nextGen = new Array(cells.length);
     cells.fill(0);
     nextGen.fill(0);
     cells[Math.floor(cells.length / 2)] = 1;
@@ -47,41 +46,43 @@ function updateCanvasSize()
 updateCanvasSize();
 
 
-function processRule(ruleNum, a,b,c)
-{
+function processRule(ruleNum, a, b, c) {
     let val = (a << 2) + (b << 1) + c;
     let ret = (ruleNum >> val) & 1;
     return ret;
 }
 
-function computeNextGeneration()
-{
-    for (let i  = 0; i < cells.length; i++)
-        {
-            nextGen[i] = processRule(ruleNum, cells[i - 1], cells[i], cells[i + 1]); 
-        }
+function computeNextGeneration() {
+
+    renderPiece(cells);
+
+    for (let i = 0; i < cells.length; i++) {
+        nextGen[i] = processRule(ruleNum, cells[i - 1], cells[i], cells[i + 1]);
+    }
     let temp = cells;
-  cells = nextGen;
-  nextGen = temp;
+    cells = nextGen;
+    nextGen = temp;
 }
 
 
 function draw(timeStamp) {
-  let y = generation * cellWidth;
-  if(y < h) {
-    ctx.fillStyle = 'black';
+    let y = generation * cellWidth;
+    if (y < h) {
+        ctx.fillStyle = 'black';
 
-    // draw current generation of cells 
-    for(let i = 0; i < cells.length; i++) {
-      if(cells[i] == 1) {
-        ctx.fillRect(i * cellWidth, y, cellWidth, cellWidth); 
-      }
+        // draw current generation of cells 
+        for (let i = 0; i < cells.length; i++) {
+            if (cells[i] == 1) {
+                ctx.fillRect(i * cellWidth, y, cellWidth, cellWidth);
+            }
+        }
+        generation++;
+            
+        let now = clock.now();
+        computeNextGeneration();
     }
-    generation++;
-    computeNextGeneration();
-  }
 
-  requestAnimationFrame(draw);
+    requestAnimationFrame(draw);
 
 }
 
@@ -130,12 +131,12 @@ function playNote(duration, frequency, amplitude) {
 }
 
 // 1. Create AudioContext. 
-let audioContext = new (window.AudioContext || window.webkitAudioContext);
+let audioContext = new(window.AudioContext || window.webkitAudioContext);
 
 let scheduler = new Scheduler();
 scheduler.attach(audioContext);
 
-let clock = new Clock(); 
+let clock = new Clock();
 clock.setTempo(60);
 clock.attach(audioContext);
 
@@ -144,18 +145,22 @@ function cause(start, func, ...args) {
     scheduler.schedule([start, func, args]);
 }
 
-function renderPiece() {
+function renderPiece(cells) {
     // deal with browser audio policies that pause on page start
     audioContext.resume();
 
-    let now = clock.now();
-    for(let i = 0; i < 60; i++) {
-        cause( 
-            now + clock.ticks(i),  // when
-            playNote,           // what function to call
-            4,                  // what arguments to call...
-            hertz(60 + i), 
-            0.25);
+    for (let i = 0; i < 60; i++) {
+
+        let now = clock.now();
+
+        if (cells[i] == 1) {
+            cause(
+                now + clock.beats(12), // when
+                playNote, // what function to call
+                4, // what arguments to call...
+                hertz(0 + i),
+                0.25);
+        }
     }
 
 }
