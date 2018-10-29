@@ -1,0 +1,23 @@
+html, body {
+  overflow: hidden;
+  margin: 0;
+  background-color: white;
+}	
+
+#controls {
+  position: fixed;
+  z-index: 10;
+  color: white;
+  padding: 10px;
+  font: 12pt Monospace;
+}
+
+#controls > div {
+  margin: 5px auto;
+}
+
+#mainCanvas {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
